@@ -2,6 +2,12 @@ import DecisionTree
 import csv
 '''
 @author  Angel Dhungana
+
+ Varies the maximum  tree depth from 1 to 6 --- for each setting, 
+ and runs the algorithm to learn a decision tree, and uses the tree to  
+ predict both the training  and test examples.
+ Prints a table the average prediction errors on each dataset using
+ information gain, majority error and gini index heuristics, respectively.
 '''
 
 
@@ -10,7 +16,6 @@ def main():
     dataSetTrain = readFromFile("car/train.csv")
     dataSetTest = readFromFile("car/test.csv")
     target = "label"
-
     # 0 = Entropy, 1 = Gini and 2 = Majority Error
     EntropyGiniMajority = [0, 1, 2]
     split = ["Entropy", "Gini Index", "Majority Error"]
