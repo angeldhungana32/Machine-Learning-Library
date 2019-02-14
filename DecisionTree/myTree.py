@@ -1,5 +1,9 @@
 '''
     @author  Angel Dhungana
+
+    myTree a file that has Node class and Branch Class
+    Each node has list of Branch Objects, and
+    Each Branch object has a childNode that they point to 
 '''
 
 

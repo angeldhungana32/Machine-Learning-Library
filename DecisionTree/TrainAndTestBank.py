@@ -1,6 +1,8 @@
 import DecisionTree
 import csv
 import statistics
+import ReadFiles
+import copy
 '''
 @author  Angel Dhungana
 
@@ -30,70 +32,182 @@ def main():
         False, True, True, True, True, False, False
     ]
     # Read data from file
-    dataSetTrain = readFromFile("bank/train.csv")
-    dataSetTest = readFromFile("bank/test.csv")
+    dataSetTrainUnFilled = ReadFiles.readFromFile("bank/train.csv")
+    dataSetTestUnFilled = ReadFiles.readFromFile("bank/test.csv")
 
     # Boolean value that determines which prediction to run, for train data or test data?
-    trainOrTest = False
     target = "y"
     # Boolean value determines if we want to fill unknown or not
-    fillUnknown = True
 
     # Gets the threshold from training data set
     # uses the threshold to convert numeric attributes to binary
-    threshold = getThreshold(dataSetTrain, attributesValues, isNumeric)
-    dataSetTrain = getBinaryForm(dataSetTrain, attributesValues, isNumeric,
-                                 threshold)
-    dataSetTest = getBinaryForm(dataSetTest, attributesValues, isNumeric,
-                                threshold)
+    threshold = getThreshold(dataSetTrainUnFilled, attributesValues, isNumeric)
+
+    dataSetTrainUnFilled = getBinaryForm(
+        dataSetTrainUnFilled, attributesValues, isNumeric, threshold)
+    dataSetTestUnFilled = getBinaryForm(dataSetTestUnFilled, attributesValues,
+                                        isNumeric, threshold)
+    #33 & 131
+    unfilled1 = copy.copy(dataSetTrainUnFilled)
+    unfilled2 = copy.copy(dataSetTestUnFilled)
     # If True, we fill the unknown with majority
-    if fillUnknown == True:
-        majority = getMajorityOfAllAttributes(dataSetTrain, attributesValues)
-        dataSetTrain = fillUnknownDataset(dataSetTrain, attributesValues,
-                                          majority)
-        dataSetTest = fillUnknownDataset(dataSetTest, attributesValues,
-                                         majority)
-    # set main data set to test on
-    if trainOrTest == True:
-        mainDataSet = dataSetTrain
-    else:
-        mainDataSet = dataSetTest
+    majority = getMajorityOfAllAttributes(unfilled1, attributesValues)
+    print()
+    print(
+        "...Printing Errors for Problem 3. It might take little time. Please Be Patient"
+        "...4 tables are being printed")
+    print()
+    print("This is the solution to 3a. Bank DataSet")
+    print()
+    errorDataTrainUnFilled = runTestOnTrainUnFilled(dataSetTrainUnFilled[:],
+                                                    dataSetTestUnFilled[:],
+                                                    attributesValues, target)
+    printErrorReport(errorDataTrainUnFilled)
+    print(
+        "------Prediction Errors on Bank Training Set(Unknown considered as Attribute)------"
+    )
+    print()
+    errorDataTestUnFilled = runTestOnTestUnFilled(dataSetTrainUnFilled[:],
+                                                  dataSetTestUnFilled[:],
+                                                  attributesValues, target)
+    printErrorReport(errorDataTestUnFilled)
+    print(
+        "--------Prediction Errors on Bank Test Set(Unknown considered as Attribute)--------"
+    )
+    dataSetTrainFilled = fillUnknownDataset(unfilled1, attributesValues,
+                                            majority)
+    dataSetTestFilled = fillUnknownDataset(unfilled2, attributesValues,
+                                           majority)
+    print()
+    print("This is the solution to 3b. Bank DataSet")
+    print()
+    errorDataTrainFilled = runTestOnTrainFilled(
+        dataSetTrainFilled[:], dataSetTestFilled[:], attributesValues, target)
+    printErrorReport(errorDataTrainFilled)
+    print(
+        "------Prediction Errors on Bank Training Set(Unknown is Filled with majority)------"
+    )
+    print()
+    errorDataTestFilled = runTestOnTestFilled(
+        dataSetTrainFilled[:], dataSetTestFilled[:], attributesValues, target)
+    printErrorReport(errorDataTestFilled)
+    print(
+        "--------Prediction Errors on Bank Test Set(Unknown is Filled with majority)--------"
+    )
+    print()
 
-    # 0 = Entropy, 1 = Gini and 2 = Majority Error
+
+def printErrorReport(errorData):
+    s = [[str(e) for e in row] for row in errorData]
+    lens = [max(map(len, col)) for col in zip(*s)]
+    fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
+    table = [fmt.format(*row) for row in s]
+    print('\n'.join(table))
+
+
+def runTestOnTrainUnFilled(dataSetTrain, dataSetTest, attributesValues,
+                           target):
     EntropyGiniMajority = [0, 1, 2]
-    # tree depth
+    split = ["Tree Depth", "Entropy", "Gini Index", "Majority Error"]
     treeDepth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-
+    errorData = []
+    errorData.append(split)
     # For each depth
     for depth in treeDepth:
-        # For each variants
         s = []
+        s.append(depth)
+        # For each variants
         for splitter in EntropyGiniMajority:
             # Generate tree from train set
             tree = DecisionTree.ID3(dataSetTrain, attributesValues, target,
                                     splitter, depth)
             # Get Error for train or test set
             error = 1 - (
-                getPredictionError(tree, mainDataSet, attributesValues,
-                                   target) / len(mainDataSet))
+                getPredictionError(tree, dataSetTrain, attributesValues,
+                                   target) / len(dataSetTrain))
             # Print it
             s.append(str(round(error, 2)))
-        # printing in a way so that, it will be easier for me to put in latex
-        print(
-            str(depth) + " & " + s[0] + " & " + s[1] + " & " + s[2] +
-            " \\\ \hline")
+            #print(tree)
+        errorData.append(s)
+    return errorData
 
 
-def readFromFile(fileName):
-    '''
-        Read CSV file and make dataset
-    '''
-    columns = []
-    with open(fileName, 'r') as f:
-        reader = csv.reader(f, delimiter=',')
-        for row in reader:
-            columns.append(row)
-    return columns
+def runTestOnTestUnFilled(dataSetTrain, dataSetTest, attributesValues, target):
+    EntropyGiniMajority = [0, 1, 2]
+    split = ["Tree Depth", "Entropy", "Gini Index", "Majority Error"]
+    treeDepth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    errorData = []
+    errorData.append(split)
+    # For each depth
+    for depth in treeDepth:
+        s = []
+        s.append(depth)
+        # For each variants
+        for splitter in EntropyGiniMajority:
+            # Generate tree from train set
+            tree = DecisionTree.ID3(dataSetTrain, attributesValues, target,
+                                    splitter, depth)
+            # Get Error for train or test set
+            error = 1 - (
+                getPredictionError(tree, dataSetTest, attributesValues,
+                                   target) / len(dataSetTest))
+            # Print it
+            s.append(str(round(error, 2)))
+            #print(tree)
+        errorData.append(s)
+    return errorData
+
+
+def runTestOnTrainFilled(dataSetTrain, dataSetTest, attributesValues, target):
+    EntropyGiniMajority = [0, 1, 2]
+    split = ["Tree Depth", "Entropy", "Gini Index", "Majority Error"]
+    treeDepth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    errorData = []
+    errorData.append(split)
+    # For each depth
+    for depth in treeDepth:
+        s = []
+        s.append(depth)
+        # For each variants
+        for splitter in EntropyGiniMajority:
+            # Generate tree from train set
+            tree = DecisionTree.ID3(dataSetTrain, attributesValues, target,
+                                    splitter, depth)
+            # Get Error for train or test set
+            error = 1 - (
+                getPredictionError(tree, dataSetTrain, attributesValues,
+                                   target) / len(dataSetTrain))
+            # Print it
+            s.append(str(round(error, 2)))
+            #print(tree)
+        errorData.append(s)
+    return errorData
+
+
+def runTestOnTestFilled(dataSetTrain, dataSetTest, attributesValues, target):
+    EntropyGiniMajority = [0, 1, 2]
+    split = ["Tree Depth", "Entropy", "Gini Index", "Majority Error"]
+    treeDepth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    errorData = []
+    errorData.append(split)
+    # For each depth
+    for depth in treeDepth:
+        s = []
+        s.append(depth)
+        # For each variants
+        for splitter in EntropyGiniMajority:
+            # Generate tree from train set
+            tree = DecisionTree.ID3(dataSetTrain, attributesValues, target,
+                                    splitter, depth)
+            # Get Error for train or test set
+            error = 1 - (
+                getPredictionError(tree, dataSetTest, attributesValues,
+                                   target) / len(dataSetTest))
+            # Print it
+            s.append(str(round(error, 2)))
+            #print(tree)
+        errorData.append(s)
+    return errorData
 
 
 def getPredictionError(tree, dataset, Attributes, target):
@@ -150,8 +264,9 @@ def getBinaryForm(dataSet, Attributes, isNumeric, thresholds):
         And if numeric value is less than median we consider that "No"
         Else, we consider "Yes"
     '''
+    newSet = copy.copy(dataSet)
     thresholdCounter = 0
-    for row in dataSet:
+    for row in newSet:
         for x in Attributes:
             indx = Attributes.index(x)
             numeric = isNumeric[indx]
@@ -163,7 +278,7 @@ def getBinaryForm(dataSet, Attributes, isNumeric, thresholds):
                     row[indx] = "No"
                 thresholdCounter += 1
         thresholdCounter = 0
-    return dataSet
+    return newSet
 
 
 def getMajorityOfAllAttributes(dataSet, Attributes):
@@ -181,12 +296,13 @@ def fillUnknownDataset(dataSet, Attributes, majority):
     '''
         if unknown is found, fill it with majority of at that index
     '''
-    for row in dataSet:
+    newSet = copy.copy(dataSet)
+    for row in newSet:
         rowLength = len(row)
         for i in range(rowLength):
             if row[i] == 'unknown':
                 row[i] = majority[i]
-    return dataSet
+    return newSet
 
 
 if __name__ == "__main__":

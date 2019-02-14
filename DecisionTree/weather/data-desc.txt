@@ -1,5 +1,0 @@
-| label values
--, +
-
-| columns
-Outlook,Temperature,Humidity,Wind,label

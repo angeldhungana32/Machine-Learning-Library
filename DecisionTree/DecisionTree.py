@@ -85,10 +85,7 @@ def getInformationGainEntropy(S, Attributes, target, attr):
     total = helperFrequencyFinder(S, indx)[1]
     for num in dictionary.keys():
         p = dictionary[num] / total
-        subset = []
-        for col in S:
-            if col[indx] == num:
-                subset.append(col)
+        subset = [col for col in S if col[indx] == num]
         attrEntropy += p * calculateEntropy(subset, Attributes, target)
     return mainEntropy - attrEntropy
 
@@ -104,10 +101,7 @@ def getInformationGainGiniIndex(S, Attributes, target, attr):
     total = helperFrequencyFinder(S, indx)[1]
     for num in dictionary.keys():
         p = dictionary[num] / total  #probability
-        subset = []
-        for col in S:
-            if col[indx] == num:
-                subset.append(col)
+        subset = [col for col in S if col[indx] == num]
         attrGiniInd += p * calculateGiniIndex(subset, Attributes, target)
     return mainGiniInd - attrGiniInd
 
@@ -123,10 +117,7 @@ def getInformationGainMajorityError(S, Attributes, target, attr):
     total = helperFrequencyFinder(S, indx)[1]
     for num in dictionary.keys():
         p = dictionary[num] / total  #probability S/|S|
-        subset = []
-        for col in S:
-            if col[indx] == num:
-                subset.append(col)
+        subset = [col for col in S if col[indx] == num]
         attrMajoritErr += p * calculateMajorityError(subset, Attributes,
                                                      target)
     return mainMajorityError - attrMajoritErr
@@ -141,10 +132,9 @@ def helperFrequencyFinder(S, indx):
     for col in S:
         if not col[indx] in dictionary:
             dictionary[col[indx]] = 1
-            total += 1
         else:
             dictionary[col[indx]] += 1
-            total += 1
+        total += 1
     return dictionary, total
 
 
@@ -154,9 +144,10 @@ def calculateEntropy(S, Attributes, target):
     '''
     indx = getIndexOfAttributes(Attributes, target)
     dictionary = helperFrequencyFinder(S, indx)[0]
+    values = dictionary.values()
     total = len(S)
     entropy = 0.0
-    for num in dictionary.values():
+    for num in values:
         entropy += (-num / total) * (math.log2(num / total))
     return entropy
 
@@ -168,8 +159,9 @@ def calculateGiniIndex(S, Attributes, target):
     indx = getIndexOfAttributes(Attributes, target)
     dictionary = helperFrequencyFinder(S, indx)[0]
     total = len(S)
+    values = dictionary.values()
     giniIndex = 0.0
-    for num in dictionary.values():
+    for num in values:
         giniIndex += (num / total) * (num / total)
     return 1 - giniIndex
 
@@ -181,9 +173,8 @@ def calculateMajorityError(S, Attributes, target):
     '''
     indx = getIndexOfAttributes(Attributes, target)
     dictionary = helperFrequencyFinder(S, indx)[0]
-    total = len(S)
     majorityError = max(dictionary.values())
-    return 1 - (majorityError / total)
+    return 1 - (majorityError / len(S))
 
 
 def getValuesOfA(S, Attributes, A):
@@ -215,6 +206,7 @@ def ID3(S, Attributes, Label, EntropyGiniMajority, treeDepth):
     '''
         Main ID3 that calls the helper recursive ID3
     '''
+    # Calling with current depth 0
     currentDepth = 0
     return recursiveID3(S, Attributes, Label, EntropyGiniMajority,
                         currentDepth, treeDepth)
