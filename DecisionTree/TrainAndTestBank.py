@@ -98,6 +98,9 @@ def main():
 
 
 def printErrorReport(errorData):
+    '''
+        Print the errors in formatted way
+    '''
     s = [[str(e) for e in row] for row in errorData]
     lens = [max(map(len, col)) for col in zip(*s)]
     fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)

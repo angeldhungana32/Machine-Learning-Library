@@ -16,9 +16,11 @@ def checkIfAllLabelSame(S, Attributes, target):
         Given a dataset checks if all the target label are same for every 
         classification
     '''
+    # get the index of the target label
     indx = getIndexOfAttributes(Attributes, target)
     count = 0
     current = ''
+    # check if there is one different and break
     for x in S:
         if count == 0:
             current = x[indx]
@@ -31,15 +33,19 @@ def checkIfAllLabelSame(S, Attributes, target):
 def mostCommonLabel(S, Attributes, target):
     '''
         Given a data set retrieves the most common target level
+        Generic Function, works for any target label
     '''
+    # get index of target label
     indx = getIndexOfAttributes(Attributes, target)
     dictionary = {}
+    # for each unique label add to dictionary and increment if already exists
     for x in S:
         currLbl = x[indx]
         if not currLbl in dictionary:
             dictionary[currLbl] = 1
         else:
             dictionary[currLbl] += 1
+    # Return the label with max occurence
     return max(dictionary, key=dictionary.get)
 
 
@@ -59,8 +65,11 @@ def chooseBestAttribute(S, Attributes, target, EntropyGiniMajority):
         EntropyGiniMajority == 2, uses Majority Error. 
     '''
     dictionary = {}
+    # For each attribute
     for attr in Attributes:
+        # If the attribute is not a target
         if attr != target:
+            # Based on which variant, calculate gain and add to dictionary
             if EntropyGiniMajority == 0:
                 dictionary[attr] = getInformationGainEntropy(
                     S, Attributes, target, attr)
@@ -78,15 +87,19 @@ def getInformationGainEntropy(S, Attributes, target, attr):
     '''
         Helper Function that Calculates Gain using Entropy
     '''
+    # Entropy of whole dataset
     mainEntropy = calculateEntropy(S, Attributes, target)
     indx = getIndexOfAttributes(Attributes, attr)
+    # Add frequency of attributes values to dictionary
     dictionary = helperFrequencyFinder(S, indx)[0]
     attrEntropy = 0.0
     total = helperFrequencyFinder(S, indx)[1]
+    # for each attribute value calculate entropy
     for num in dictionary.keys():
-        p = dictionary[num] / total
         subset = [col for col in S if col[indx] == num]
-        attrEntropy += p * calculateEntropy(subset, Attributes, target)
+        attrEntropy += (dictionary[num] / total) * calculateEntropy(
+            subset, Attributes, target)
+    #Return gain
     return mainEntropy - attrEntropy
 
 
@@ -94,15 +107,20 @@ def getInformationGainGiniIndex(S, Attributes, target, attr):
     '''
         Helper Function that Calculates Gain using Gini Index
     '''
+    # Gini Index of whole dataset
     mainGiniInd = calculateGiniIndex(S, Attributes, target)
     indx = getIndexOfAttributes(Attributes, attr)
+    # Add frequeuncy of attributes values to dictionary
     dictionary = helperFrequencyFinder(S, indx)[0]
     attrGiniInd = 0.0
     total = helperFrequencyFinder(S, indx)[1]
+    # For each value get subset and calculate gini index
     for num in dictionary.keys():
-        p = dictionary[num] / total  #probability
         subset = [col for col in S if col[indx] == num]
-        attrGiniInd += p * calculateGiniIndex(subset, Attributes, target)
+        # p * giniIndx
+        attrGiniInd += (dictionary[num] / total) * calculateGiniIndex(
+            subset, Attributes, target)
+    # Return gain
     return mainGiniInd - attrGiniInd
 
 
@@ -110,16 +128,19 @@ def getInformationGainMajorityError(S, Attributes, target, attr):
     '''
         Helper Function that Calculates Gain using Majority Error
     '''
+    # Get the Majority Error of whole dataset
     mainMajorityError = calculateMajorityError(S, Attributes, target)
     indx = getIndexOfAttributes(Attributes, attr)
+    # Add the values of Attributes
     dictionary = helperFrequencyFinder(S, indx)[0]
     attrMajoritErr = 0.0
     total = helperFrequencyFinder(S, indx)[1]
+    # For each values, get subset and calulate majority error
     for num in dictionary.keys():
-        p = dictionary[num] / total  #probability S/|S|
         subset = [col for col in S if col[indx] == num]
-        attrMajoritErr += p * calculateMajorityError(subset, Attributes,
-                                                     target)
+        attrMajoritErr += (dictionary[num] / total) * calculateMajorityError(
+            subset, Attributes, target)
+    # Return gain
     return mainMajorityError - attrMajoritErr
 
 
@@ -129,6 +150,7 @@ def helperFrequencyFinder(S, indx):
     '''
     dictionary = {}
     total = 0
+    # If existing increment, else add to dictionary
     for col in S:
         if not col[indx] in dictionary:
             dictionary[col[indx]] = 1
@@ -142,11 +164,14 @@ def calculateEntropy(S, Attributes, target):
     '''
         Calculates Entropy (-P * log_2(P)) + ..... +
     '''
+    # Get indx of target label
     indx = getIndexOfAttributes(Attributes, target)
+    # Get attribute values labels as dict
     dictionary = helperFrequencyFinder(S, indx)[0]
     values = dictionary.values()
     total = len(S)
     entropy = 0.0
+    # For each label value calculate entropy
     for num in values:
         entropy += (-num / total) * (math.log2(num / total))
     return entropy
@@ -161,6 +186,7 @@ def calculateGiniIndex(S, Attributes, target):
     total = len(S)
     values = dictionary.values()
     giniIndex = 0.0
+    # For each label value calculate gini index
     for num in values:
         giniIndex += (num / total) * (num / total)
     return 1 - giniIndex
@@ -173,23 +199,23 @@ def calculateMajorityError(S, Attributes, target):
     '''
     indx = getIndexOfAttributes(Attributes, target)
     dictionary = helperFrequencyFinder(S, indx)[0]
+    # Get the max number of occurences
     majorityError = max(dictionary.values())
+    # Divide that by total and return error by subtracting to 1
     return 1 - (majorityError / len(S))
 
 
 def getValuesOfA(S, Attributes, A):
     '''
-        Returns the possible values that A has
+        Returns the possible values that A
     '''
     ind = getIndexOfAttributes(Attributes, A)
-    vals = []
-    for col in S:
-        if col[ind] not in vals:
-            vals.append(col[ind])
-    return vals
+    vals = [col[ind] for col in S]
+    # Return the set of unique attribute features
+    return set(vals)
 
 
-def getSubset(S, Attributes, A, v):
+def getSubsetAFromS(S, Attributes, A, v):
     '''
         Returns subset of examples in S with A=v
     '''
@@ -197,7 +223,7 @@ def getSubset(S, Attributes, A, v):
     ind = getIndexOfAttributes(Attributes, A)
     for col in S:
         if (col[ind] == v):
-            # Removing the column A from S
+            # Make subset by removing the column A from S
             subset.append([col[i] for i in range(0, len(col)) if i != ind])
     return subset
 
@@ -235,7 +261,7 @@ def recursiveID3(S, Attributes, Label, EntropyGiniMajority, currentDepth,
         # For each value
         for v in valuesOfAList:
             # Get that subset of S, A=v
-            subset = getSubset(S, Attributes, A, v)
+            subset = getSubsetAFromS(S, Attributes, A, v)
 
             # If empty subset, add the most common label as Node
             if len(subset) == 0:
