@@ -4,6 +4,7 @@
  
  - Open the file and input necessary items.
     - Input Filename of your dataSet both training and testing; with path if its in different folder.
+      - Make Sure the file is a csv file.
     - Enter Attributes name.
     - Enter Target Label.
     - Choose maxDepth of the tree.
