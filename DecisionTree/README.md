@@ -1,4 +1,4 @@
-# READ ME  
+# README  
 ## How to run my Decision Tree?
  - You will find a file name runMyDecisionTree.py in the folder.
  
