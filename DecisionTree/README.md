@@ -1,5 +1,5 @@
-#READ ME  
-How to run my Decision Tree?
+# READ ME  
+## How to run my Decision Tree?
  - You will find a file name runMyDecisionTree.py in the folder.
  
  - Open the file and input necessary items.
