@@ -8,8 +8,8 @@ import ReadFiles
 
 
 def main():
-    trainFileName = "Enter training set file name here"
-    testFileName = "Enter test set file name here"
+    trainFileName = "bank/train.csv"
+    testFileName = "bank/test.csv"
 
     dataSetTrain = ReadFiles.readFromFile(trainFileName)
     dataSetTest = ReadFiles.readFromFile(testFileName)
