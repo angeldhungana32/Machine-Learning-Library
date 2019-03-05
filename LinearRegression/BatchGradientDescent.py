@@ -55,6 +55,18 @@ def computeCost(X, y, w):
     return np.sum(inner) / (2 * len(X))
 
 
+def getError(X, Y, w):
+    '''
+        Returns the error for Test using weights
+    '''
+    sign = np.sign(X @ w.T)
+    count = 0
+    for i in range(len(Y)):
+        if sign[i] != Y[i]:
+            count += 1
+    return count / len(Y)
+
+
 def plotCostFunction(num_iterations, costArr):
     '''
         Save the cost function plot
