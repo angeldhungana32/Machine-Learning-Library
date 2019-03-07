@@ -55,6 +55,14 @@ def calculateFinalPrediction(hypotheses, dataSetTrain, dataSetTest, Attributes,
     return finalPredictionTrain, finalPredictionTest
 
 
+def getTestError(TestPred, ActualY):
+    count = 0
+    for i in range(TestPred):
+        if TestPred[i] != ActualY[i]:
+            count += 1
+    return count / len(TestPred)
+
+
 def Bagging100(dataSetTrain, dataSetTest, Attributes, target, num_iterations,
                num_predictors):
     '''

@@ -73,7 +73,8 @@ def AdaBoost(dataSetTrain, dataSetTest, Attributes, target, num_iterations):
         error_Test_Stump.append(errTestStmp)
 
     # Return errors of ada and decision stumps
-    return error_Train, error_Test, error_Train_Stump, error_Test_Stump
+    #return error_Train, error_Test, error_Train_Stump, error_Test_Stump
+    return hypotheses, weights
 
 
 def pred_label(X, hypotheses, weights, N, Attributes, actY):
